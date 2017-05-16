@@ -1,5 +1,5 @@
 /*
-This file is part of CanFestival, a library implementing CanOpen Stack. 
+This file is part of CanFestival, a library implementing CanOpen Stack.
 
 Copyright (C): Edouard TISSERANT and Francis DUPIN
 
@@ -49,9 +49,11 @@ typedef struct struct_CO_Data CO_Data;
 #include "lss.h"
 #endif
 
+typedef void(*post_RPDO_t)(CO_Data*, UNS16);
+
 /**
  * @ingroup od
- * @brief This structure contains all necessary informations to define a CANOpen node 
+ * @brief This structure contains all necessary informations to define a CANOpen node
  */
 struct struct_CO_Data {
 	/* Object dictionary */
@@ -65,10 +67,13 @@ struct struct_CO_Data {
 	const UNS16 *ObjdictSize;
 	const UNS8 *iam_a_slave;
 	valueRangeTest_t valueRangeTest;
-	
+
 	/* SDO */
 	s_transfer transfers[SDO_MAX_SIMULTANEOUS_TRANSFERS];
 	/* s_sdo_parameter *sdo_parameters; */
+
+	/* PDO */
+	post_RPDO_t post_RPDO;// JDA callback called after PDO reception
 
 	/* State machine */
 	e_nodeState nodeState;
@@ -79,7 +84,7 @@ struct struct_CO_Data {
 	stopped_t stopped;
      void (*NMT_Slave_Node_Reset_Callback)(CO_Data*);
      void (*NMT_Slave_Communications_Reset_Callback)(CO_Data*);
-     
+
 	/* NMT-heartbeat */
 	UNS8 *ConsumerHeartbeatCount;
 	UNS32 *ConsumerHeartbeatEntries;
@@ -87,7 +92,7 @@ struct struct_CO_Data {
 	UNS16 *ProducerHeartBeatTime;
 	TIMER_HANDLE ProducerHeartBeatTimer;
 	heartbeatError_t heartbeatError;
-	e_nodeState NMTable[NMT_MAX_NODE_ID]; 
+	e_nodeState NMTable[NMT_MAX_NODE_ID];
 
 	/* NMT-nodeguarding */
 	TIMER_HANDLE GuardTimeTimer;
@@ -106,13 +111,13 @@ struct struct_CO_Data {
 	post_TPDO_t post_TPDO;
 	post_SlaveBootup_t post_SlaveBootup;
     post_SlaveStateChange_t post_SlaveStateChange;
-	
+
 	/* General */
 	UNS8 toggle;
-	CAN_PORT canHandle;	
+	CAN_PORT canHandle;
 	scanIndexOD_t scanIndexOD;
-	storeODSubIndex_t storeODSubIndex; 
-	
+	storeODSubIndex_t storeODSubIndex;
+
 	/* DCF concise */
     const indextable* dcf_odentry;
 	UNS8* dcf_cursor;
@@ -120,7 +125,7 @@ struct struct_CO_Data {
 	UNS8 dcf_status;
     UNS32 dcf_size;
     UNS8* dcf_data;
-	
+
 	/* EMCY */
 	e_errorState error_state;
 	UNS8 error_history_size;
@@ -130,12 +135,12 @@ struct struct_CO_Data {
     UNS32* error_cobid;
 	s_errors error_data[EMCY_MAX_ERRORS];
 	post_emcy_t post_emcy;
-	
+
 #ifdef CO_ENABLE_LSS
 	/* LSS */
 	lss_transfer_t lss_transfer;
 	lss_StoreConfiguration_t lss_StoreConfiguration;
-#endif	
+#endif
 };
 
 #define NMTable_Initializer Unknown_state,
@@ -201,10 +206,10 @@ struct struct_CO_Data {
 	0, /* errRegMask */\
 	0 /* active */\
 	},
-	
+
 #ifdef CO_ENABLE_LSS
 
-#ifdef CO_ENABLE_LSS_FS	
+#ifdef CO_ENABLE_LSS_FS
 #define lss_fs_Initializer \
 		,0,						/* IDNumber */\
   		128, 					/* BitChecked */\
@@ -216,7 +221,7 @@ struct struct_CO_Data {
   		{{0,0,0,0},{0,0,0,0}}   /* lss_fs_transfer */
 #else
 #define lss_fs_Initializer
-#endif		
+#endif
 
 #define lss_Initializer {\
 		LSS_RESET,  			/* state */\
@@ -262,6 +267,8 @@ struct struct_CO_Data {
 	{\
           REPEAT_SDO_MAX_SIMULTANEOUS_TRANSFERS_TIMES(s_transfer_Initializer)\
 	},\
+	\
+	NULL, /* RPDO callback */ \
 	\
 	/* State machine*/\
 	Unknown_state,      /* nodeState */\
@@ -345,5 +352,3 @@ struct struct_CO_Data {
 #endif
 
 #endif /* __data_h__ */
-
-

@@ -194,7 +194,7 @@ proceedPDO (CO_Data * d, Message * m)
   numPdo = 0;
   numMap = 0;
   if ((*m).rtr == NOT_A_REQUEST)
-    { 
+    {
       offsetObjdict = d->firstIndex->PDO_RCV;
       lastIndex = d->lastIndex->PDO_RCV;
 
@@ -254,7 +254,7 @@ proceedPDO (CO_Data * d, Message * m)
 
                     Size = (UNS8) (*pMappingParameter & (UNS32) 0x000000FF);
 
-                    /* set variable only if Size != 0 and 
+                    /* set variable only if Size != 0 and
                      * Size is lower than remaining bits in the PDO */
                     if (Size && ((offset + Size) <= (m->len << 3)))
                       {
@@ -292,6 +292,11 @@ proceedPDO (CO_Data * d, Message * m)
                       }
                     numMap++;
                   }             /* end loop while on mapped variables */
+                if (d->post_RPDO)
+				{
+					// callback after pdo reception
+					d->post_RPDO(d, m->cob_id);
+				}
                 if (d->RxPDO_EventTimers)
                 {
                     TIMEVAL EventTimerDuration = *(UNS16 *)d->objdict[offsetObjdict].pSubindex[5].pObject;
@@ -381,7 +386,7 @@ proceedPDO (CO_Data * d, Message * m)
                       DelAlarm (d->PDO_status[numPdo].inhibit_timer);
                     d->PDO_status[numPdo].transmit_type_parameter &=
                       ~PDO_INHIBITED;
-                    /* Call  PDOEventTimerAlarm for this TPDO, 
+                    /* Call  PDOEventTimerAlarm for this TPDO,
                      * this will trigger emission et reset timers */
                     PDOEventTimerAlarm (d, numPdo);
                     return 0;
@@ -523,10 +528,10 @@ sendOnePDOevent (CO_Data * d, UNS8 pdoNum)
     {
       return 0;
     }
- 
+
   MSG_WAR (0x3968, "  PDO is on EVENT. Trans type : ",
            *((UNS8 *) d->objdict[offsetObjdict].pSubindex[2].pObject));
-  
+
   memset(&pdo, 0, sizeof(pdo));
   if (buildPDO (d, pdoNum, &pdo))
     {
@@ -863,4 +868,3 @@ PDODisable (CO_Data * d, UNS8 pdoNum)
   offsetObjdict = (UNS16) (d->firstIndex->PDO_TRS + pdoNum);
   *(UNS32 *) d->objdict[offsetObjdict].pSubindex[1].pObject |= 0x80000000;
 }
-

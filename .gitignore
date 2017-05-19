@@ -1,3 +1,11 @@
 *.o
 *.so
 *.a
+*.suo
+*.sdf
+*.user
+*.opensdf
+*.pyc
+**/Debug/
+**/Release/
+**/x64/

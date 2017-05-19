@@ -32,28 +32,29 @@ EXPORTS
         _heartbeatError
         _post_SlaveBootup
         _post_SlaveStateChange
+        _nodeguardError
         getNodeState
         heartbeatInit
         heartbeatStop
         proceedNODE_GUARD
-        
+
         ; nmtMaster.h
         masterSendNMTstateChange
         masterSendNMTnodeguard
         masterRequestNodeState
-        
+
         ; nmtSlave.h
         proceedNMTstateChange
         slaveSendBootUp
-        
+
         ; objacces.h
         _storeODSubIndex
         accessDictionaryError
         _getODentry
         _setODentry
-        scanIndexOD
+        ; scanIndexOD
         RegisterSetODentryCallBack
-        
+
         ; pdo.h
         buildPDO
         sendPDOrequest

@@ -56,24 +56,26 @@ TIMER_HANDLE last_timer_raw = -1;
 **/
 TIMER_HANDLE SetAlarm(CO_Data* d, UNS32 id, TimerCallback_t callback, TIMEVAL value, TIMEVAL period)
 {
+	if (!callback)/* if nothing to store */
+		return TIMER_NONE;
+
 	TIMER_HANDLE row_number;
 	s_timer_entry *row;
 
 	/* in order to decide new timer setting we have to run over all timer rows */
 	for(row_number=0, row=timers; row_number <= last_timer_raw + 1 && row_number < MAX_NB_TIMER; row_number++, row++)
 	{
-		if (callback && 	/* if something to store */
-		   row->state == TIMER_FREE) /* and empty row */
+		if (row->state == TIMER_FREE) /* and empty row */
 		{	/* just store */
 			TIMEVAL real_timer_value;
 			TIMEVAL elapsed_time;
 
-			if (row_number == last_timer_raw + 1) last_timer_raw++;
+			if (row_number == last_timer_raw + 1)
+				last_timer_raw++;
 
 			elapsed_time = getElapsedTime();
 			/* set next wakeup alarm if new entry is sooner than others, or if it is alone */
-			real_timer_value = value;
-			real_timer_value = min_val(real_timer_value, TIMEVAL_MAX);
+			real_timer_value = min_val(value, TIMEVAL_MAX);
 
 			if (total_sleep_time > elapsed_time && total_sleep_time - elapsed_time > real_timer_value)
 			{

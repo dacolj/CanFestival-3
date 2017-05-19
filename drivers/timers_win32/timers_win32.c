@@ -38,7 +38,34 @@ extern "C" {
 };
 #endif
 
+#define USE_PERFORMANCE_TIMER
+#ifdef USE_PERFORMANCE_TIMER
+__int64 PCFreq = 0;
+__int64 timebuffer = 0;
+
+int InitCounter()
+{
+	LARGE_INTEGER li;
+	if (!QueryPerformanceFrequency(&li))
+	{
+		PCFreq = 1;
+		return -1;
+	}
+
+	PCFreq = li.QuadPart;
+	return 0;
+}
+
+__int64 GetCounter()
+{
+	LARGE_INTEGER li;
+	QueryPerformanceCounter(&li);
+	return 1000 * li.QuadPart / PCFreq;
+}
+
+#else
 DWORD timebuffer;
+#endif
 
 /* Synchronization Object Implementation */
 CRITICAL_SECTION CanFestival_mutex;
@@ -91,7 +118,11 @@ DWORD TimerThreadLoop(LPVOID arg)
 		if(stop_timer)
 			break;
 		EnterMutex();
+#ifdef USE_PERFORMANCE_TIMER
+		timebuffer = GetCounter();
+#else
 		timebuffer = GetTickCount();
+#endif
 		TimeDispatch();
 		LeaveMutex();
 	}
@@ -100,9 +131,14 @@ DWORD TimerThreadLoop(LPVOID arg)
 
 void TimerInit(void)
 {
-	LARGE_INTEGER liDueTime;
-	liDueTime.QuadPart = 0;
-
+	//LARGE_INTEGER liDueTime;
+	//liDueTime.QuadPart = 0;
+#ifdef USE_PERFORMANCE_TIMER
+	if (InitCounter() != 0)
+	{
+		printf("Fail to init timer");
+	}
+#endif
 	InitializeCriticalSection(&CanFestival_mutex);
 
 	timer = CreateWaitableTimer(NULL, FALSE, NULL);
@@ -112,7 +148,11 @@ void TimerInit(void)
     }
 
 	// Take first absolute time ref in milliseconds.
+#ifdef USE_PERFORMANCE_TIMER
+	timebuffer = GetCounter();
+#else
 	timebuffer = GetTickCount();
+#endif
 }
 
 void TimerCleanup(void)
@@ -171,7 +211,11 @@ void setTimer(TIMEVAL value)
 /* Get the elapsed time since the last occured alarm */
 TIMEVAL getElapsedTime(void)
 {
-  DWORD timetmp = GetTickCount();
-  return (timetmp - timebuffer);
+#ifdef USE_PERFORMANCE_TIMER
+	__int64 timetmp = GetCounter();
+#else
+	DWORD timetmp = GetTickCount();
+#endif
+  return (TIMEVAL)(timetmp - timebuffer);
 }
 

@@ -91,7 +91,6 @@ LIB_HANDLE LoadCanDriver(const char* driver_name)
 	LIB_HANDLE handle = NULL;
 	char *error;
 
-
 	if(handle==NULL)
 	{
 		handle = dlopen(driver_name, RTLD_LAZY);
@@ -138,16 +137,24 @@ UNS8 canSend(CAN_PORT port, Message *m)
  */
 void canReceiveLoop(CAN_PORT port)
 {
-       Message m;
+	Message m;
 
-       while (((CANPort*)port)->used) {
-               if (DLL_CALL(canReceive)(((CANPort*)port)->fd, &m) != 0)
-                       break;
+	while (((CANPort*)port)->used)
+	{
+		UNS8 r = DLL_CALL(canReceive)(((CANPort*)port)->fd, &m);
+		if (r != 0)
+		{
+			if (r == CAN_RCV_TIMEOUT_CODE)
+				continue;
 
-               EnterMutex();
-               canDispatch(((CANPort*)port)->d, &m);
-               LeaveMutex();
-       }
+			fprintf(stderr,"Error, exiting CAN receive loop (%d) \n", (int)r);
+			break;
+		}
+
+		EnterMutex();
+		canDispatch(((CANPort*)port)->d, &m);
+		LeaveMutex();
+	}
 }
 
 /**

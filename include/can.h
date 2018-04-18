@@ -1,5 +1,5 @@
 /*
-This file is part of CanFestival, a library implementing CanOpen Stack. 
+This file is part of CanFestival, a library implementing CanOpen Stack.
 
 Copyright (C): Edouard TISSERANT and Francis DUPIN
 
@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "applicfg.h"
 
-/** 
- * @brief The CAN message structure 
+/**
+ * @brief The CAN message structure
  * @ingroup can
  */
 typedef struct {
@@ -35,6 +35,8 @@ typedef struct {
   UNS8 len;		/**< message's length (0 to 8) */
   UNS8 data[8]; /**< message's datas */
 } Message;
+
+#define CAN_RCV_TIMEOUT_CODE 255
 
 #define Message_Initializer {0,0,0,{0,0,0,0,0,0,0,0}}
 

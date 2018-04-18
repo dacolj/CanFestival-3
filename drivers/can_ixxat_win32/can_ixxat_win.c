@@ -81,7 +81,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "vciguid.h"
 #include "vcierr.h"
 
-
+//#define CAN_IXXAT_RCV_TIMEOUT_MS INFINITE
+#define CAN_IXXAT_RCV_TIMEOUT_MS 500
 
 /************************************************************************
 **   bus status polling cycle  milliseconds
@@ -169,7 +170,7 @@ CAN_HANDLE __stdcall canOpen_driver(s_BOARD *board)
 	}
 
 	if (index == 9)
-{	
+	{
 		MSG_ERR_DRV("IXXAT::open: The given baudrate %S is invalid.", baud_rate);
 		return NULL ;
 	}
@@ -298,7 +299,11 @@ UNS8 __stdcall canReceive_driver(CAN_HANDLE inst, Message *m)
     HRESULT hResult;
 	CANMSG rCanMsg;
 	//Read message from the receive buffer
-	hResult=canChannelReadMessage( hCanChn, INFINITE, &rCanMsg );
+	hResult=canChannelReadMessage( hCanChn, CAN_IXXAT_RCV_TIMEOUT_MS, &rCanMsg );
+
+	if (hResult == VCI_E_TIMEOUT)
+		return CAN_RCV_TIMEOUT_CODE;
+
 	if (hResult !=VCI_OK )
 		return 1;
 

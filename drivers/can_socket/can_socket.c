@@ -63,6 +63,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define CAN_ERRNO(err) errno
 #define CAN_SETSOCKOPT setsockopt
 #endif
+// timeout for RECV
+#define CAN_SOCKET_RCV_TIMEOUT_S 0;
+#define CAN_SOCKET_RCV_TIMEOUT_US 500000;
 
 #include "can_driver.h"
 
@@ -72,10 +75,22 @@ canReceive_driver (CAN_HANDLE fd0, Message * m)
 {
   int res;
   struct can_frame frame;
+  do
+  {
+    res = CAN_RECV (*(int *) fd0, &frame, sizeof (frame), 0);
+  }
+  while (res == -1 && errno == EINTR);
 
-  res = CAN_RECV (*(int *) fd0, &frame, sizeof (frame), 0);
+
   if (res < 0)
     {
+      int err = CAN_ERRNO (res);
+
+      if (err == EAGAIN)
+      {
+        return CAN_RCV_TIMEOUT_CODE;
+      }
+
       fprintf (stderr, "Recv failed: %s\n", strerror (CAN_ERRNO (res)));
       return 1;
     }
@@ -203,7 +218,7 @@ canOpen_driver (s_BOARD * board)
 	       ifr.ifr_name, strerror (CAN_ERRNO (err)));
       goto error_close;
     }
-  
+
   {
     int loopback = 1;
     err = CAN_SETSOCKOPT(*(int *)fd0, SOL_CAN_RAW, CAN_RAW_LOOPBACK,
@@ -213,7 +228,22 @@ canOpen_driver (s_BOARD * board)
         goto error_close;
     }
   }
-  
+
+#ifdef RTCAN_SOCKET
+	#error TODO check how timeout works (maybe following "standard socket" code is ok)
+#else
+  {
+    struct timeval tv;
+    tv.tv_sec = CAN_SOCKET_RCV_TIMEOUT_S;
+    tv.tv_usec = CAN_SOCKET_RCV_TIMEOUT_US;
+    err = CAN_SETSOCKOPT(*(int *)fd0, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    if (err) {
+        fprintf(stderr, "setting timeout option error: %s\n", strerror (CAN_ERRNO (err)));
+        goto error_close;
+    }
+  }
+#endif
+
 #ifndef RTCAN_SOCKET /*CAN_RAW_RECV_OWN_MSGS not supported in rtsocketcan*/
   {
     int recv_own_msgs = 0; /* 0 = disabled (default), 1 = enabled */
@@ -225,7 +255,7 @@ canOpen_driver (s_BOARD * board)
     }
   }
 #endif
-  
+
   addr.can_family = AF_CAN;
   addr.can_ifindex = ifr.ifr_ifindex;
   err = CAN_BIND (*(int *) fd0, (struct sockaddr *) &addr, sizeof (addr));

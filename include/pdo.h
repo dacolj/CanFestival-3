@@ -1,5 +1,5 @@
 /*
-This file is part of CanFestival, a library implementing CanOpen Stack. 
+This file is part of CanFestival, a library implementing CanOpen Stack.
 
 Copyright (C): Edouard TISSERANT and Francis DUPIN
 
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *  It is an uncomfirmed communication service without protocol overhead.
  *  @ingroup comobj
  */
- 
+
 #ifndef __pdo_h__
 #define __pdo_h__
 
@@ -56,7 +56,7 @@ struct struct_s_PDO_status {
 #define s_PDO_status_Initializer {0, TIMER_NONE, TIMER_NONE, Message_Initializer}
 
 /** definitions of the different types of PDOs' transmission
- * 
+ *
  * SYNCHRO(n) means that the PDO will be transmited every n SYNC signal.
  */
 #define TRANS_EVERY_N_SYNC(n) (n) /*n = 1 to 240 */
@@ -68,7 +68,7 @@ struct struct_s_PDO_status {
 #define TRANS_EVENT_SPECIFIC  254  /* Transmission on event */
 #define TRANS_EVENT_PROFILE   255  /* Transmission on event */
 
-/** 
+/**
  * @brief Copy all the data to transmit in process_var
  * Prepare the PDO defined at index to be sent
  * *pwCobId : returns the value of the cobid. (subindex 1)
@@ -79,7 +79,7 @@ struct struct_s_PDO_status {
  */
 UNS8 buildPDO(CO_Data* d, UNS8 numPdo, Message *pdo);
 
-/** 
+/**
  * @ingroup pdo
  * @brief Transmit a PDO request frame on the network to the slave.
  * @param *d Pointer on a CAN object data structure
@@ -87,7 +87,7 @@ UNS8 buildPDO(CO_Data* d, UNS8 numPdo, Message *pdo);
  * @return
  *       - CanFestival file descriptor is returned upon success.
  *       - 0xFF is returned if RPDO Index is not found.
- 
+
  * @return 0xFF if error, other in success.
  */
 UNS8 sendPDOrequest( CO_Data* d, UNS16 RPDOIndex );
@@ -101,53 +101,53 @@ UNS8 sendPDOrequest( CO_Data* d, UNS16 RPDOIndex );
  */
 UNS8 proceedPDO (CO_Data* d, Message *m);
 
-/** 
+/**
  * @brief Used by the application to signal changes in process data
  * that could be mapped to some TPDO.
  * This do not necessarily imply PDO emission.
- * Function iterates on all TPDO and look TPDO transmit 
- * type and content change before sending it.    
+ * Function iterates on all TPDO and look TPDO transmit
+ * type and content change before sending it.
  * @param *d Pointer on a CAN object data structure
  */
 UNS8 sendPDOevent (CO_Data* d);
 UNS8 sendOnePDOevent (CO_Data* d, UNS8 pdoNum);
 
-/** 
+/**
  * @brief Enable a PDO by setting to 0 the bit 32 of the COB-ID parameter
  * @param *d Pointer on a CAN object data structure
  * @param pdoNum The PDO number
  */
 void PDOEnable (CO_Data * d, UNS8 pdoNum);
 
-/** 
+/**
  * @brief Disable a PDO by setting to 1 the bit 32 of the COB-ID parameter
  * @param *d Pointer on a CAN object data structure
  * @param pdoNum The PDO number
  */
 void PDODisable (CO_Data * d, UNS8 pdoNum);
 
-/** 
+/**
  * @ingroup pdo
- * @brief Function iterates on all TPDO and look TPDO transmit 
+ * @brief Function iterates on all TPDO and look TPDO transmit
  * type and content change before sending it.
  * @param *d Pointer on a CAN object data structure
  * @param isSyncEvent
  */
 UNS8 _sendPDOevent(CO_Data* d, UNS8 isSyncEvent);
 
-/** 
- * @brief Initialize PDO feature 
+/**
+ * @brief Initialize PDO feature
  * @param *d Pointer on a CAN object data structure
  */
 void PDOInit(CO_Data* d);
 
-/** 
- * @brief Stop PDO feature 
+/**
+ * @brief Stop PDO feature
  * @param *d Pointer on a CAN object data structure
  */
 void PDOStop(CO_Data* d);
 
-/** 
+/**
  * @ingroup pdo
  * @brief Set timer for PDO event
  * @param *d Pointer on a CAN object data structure
@@ -155,7 +155,7 @@ void PDOStop(CO_Data* d);
  */
 void PDOEventTimerAlarm(CO_Data* d, UNS32 pdoNum);
 
-/** 
+/**
  * @ingroup pdo
  * @brief Inhibit timer for PDO event
  * @param *d Pointer on a CAN object data structure

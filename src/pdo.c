@@ -295,7 +295,7 @@ proceedPDO (CO_Data * d, Message * m)
                 if (d->post_RPDO)
 				{
 					// callback after pdo reception
-					d->post_RPDO(d, m->cob_id);
+					d->post_RPDO(d, m);
 				}
                 if (d->RxPDO_EventTimers)
                 {

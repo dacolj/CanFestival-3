@@ -49,7 +49,7 @@ typedef struct struct_CO_Data CO_Data;
 #include "lss.h"
 #endif
 
-typedef void(*post_RPDO_t)(CO_Data*, UNS16);
+typedef void(*post_RPDO_t)(CO_Data*, Message*);
 
 /**
  * @ingroup od
